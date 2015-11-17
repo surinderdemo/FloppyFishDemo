@@ -1,348 +1,44 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE HTML>
+<html lang="en">
+
 <head>
+	<meta charset="UTF-8">
+	<meta content="Floppy Fish Game"/>
+	<meta name="description" content="A recreation of Flappy Bird with an underwater twist">
+	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1, maximum-scale=1, user-scalable=0" />
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
-	<!-- Meta -->
-	<meta charset="utf-8">
-	<meta name="keywords" content="GeoAlarm" />
-	<meta name="description" content="GeoAlarm">
-	<meta name="author" content="">
-
-	<title> GUI for GeoThing</title>
-
-	<!-- Mobile Meta -->
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-	<!-- MapBox API -->
-	<script src='https://api.tiles.mapbox.com/mapbox.js/v2.2.2/mapbox.js'></script>
-    <link href='https://api.tiles.mapbox.com/mapbox.js/v2.2.2/mapbox.css' rel='stylesheet' />
-
-	<!--Firebase-->
-	<script src="https://cdn.firebase.com/js/client/2.3.1/firebase.js"></script>
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/3.0.3/normalize.css">
-
-	<!-- Google Webfonts -->
-	<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300,400italic,600,700,800,700italic,600italic' rel='stylesheet' type='text/css'>
-	<link href='http://fonts.googleapis.com/css?family=Neuton:400,200,300' rel='stylesheet' type='text/css'>
-
-	<!-- Bootstrap Core CSS -->
-	<link href="css/bootstrap.css" rel="stylesheet"> 
-
-	<!-- Theme Styles CSS-->
-	<link href="font-awesome/css/font-awesome.min.css" rel="stylesheet">
-
-	<!-- Main Style Sheet CSS -->
-	<link rel="stylesheet" href="css/style.css" >
-
-	<!-- Load local jQuery -->
-    <script src="libs/jquery-loader.js"></script>
-
-    <!-- checker -->
-    <script src="scripts/check.js"></script>
-
-
-	<!-- ReModal CSS and JS -->
-
-	<link rel="stylesheet" href="css/remodal.css">
-    <link rel="stylesheet" href="css/remodal-default-theme.css">
-    <script src="scripts/remodal.js"></script>
-    <style>
-      .remodal-overlay.without-animation.remodal-is-opening,
-      .remodal-overlay.without-animation.remodal-is-closing,
-      .remodal.without-animation.remodal-is-opening,
-      .remodal.without-animation.remodal-is-closing,
-      .remodal-bg.without-animation.remodal-is-opening,
-      .remodal-bg.without-animation.remodal-is-closing {
-        animation: none;
-      }
-    </style>
-
+	<style type="text/css">
+		body {
+			margin: 0;
+			padding: 0;
+			background: #000;
+		}
+		canvas {
+			display: block;
+			margin: 0 auto;
+			background: #fff;
+		}
+		audio {
+			display: none;
+		}
+	</style>
 
 </head>
+
+<canvas></canvas>
+
 <body>
 
-<!-- LOADING MASK -->
-<div id="mask">   
-    <div class="loader">
-        <img src="assets/loading.gif" alt='loading'>
-    </div>
-</div>
-
-<!-- MAIN CONTENT -->
-<div class="main-content">
-	<div class="container no-padding">
-
-
-		<div class="row" style="background:white";> 
-
-			<!-- LEFT SECTION -->
-			<div class="singleReminderTemplate" id="singleReminder">
-						Title: <span id = "remindT"></span> Location: <span id = "remindL"> </span><br/>Distance:<span id = "distanceD"></span>
-
-
-			</div> 
-
-			<div class="col-md-3 l-content">
-				<div class="profile-pic">
-					<div class="pic-bg">
-						<img src="assets/profile-avatar.png" class="img-responsive" alt=""/></div>
-				</div>
-				<!-- PUT BUTTON HERE -->
-				<div class="add_new">
-					<button href="#" data-remodal-target="modal">Add Reminder</button>
-				</div>
-
-				<div class="remodal" data-remodal-id="modal">
-					<div class="reminder_form">
-						<h4>Setup a Reminder <br> </h4>
-						<form id="reminderForm" method="post" >
-									<input type="text" name="reminderTitle" id="reminderTitle" placeholder="Title of Reminder" required>
-									<input type="text" name="reminderLocation" id="reminderLocation" placeholder="Location" required>
-									<input type="text" name="distance" id="distance" placeholder="Distance(km)" required>
-									<!-- Button -->
-									<button id= "messageButton">Send Message</button>
-						</form>
-						<input type = "text" id = "txtOutput" />
-						<div id="successMessage" class="successmessage">
-							<p><span class="success-ico"></span> Your reminder has been added.</p>
-						</div>
-						<div id="failureMessage" class="errormessage">
-							<p><span class="error-ico"></span> There was a problem with entering your reminder. Please try again.</p>
-						</div>
-					</div>
-
-					  <a data-remodal-action="close" class="remodal-close"></a>
-
-					  <a data-remodal-action="cancel" class="remodal-cancel" href="#">Close</a>
-				</div>
-				<div class="remindersList" id="remindersList">
-					
-
-					<!-- PUT REMINDERS HERE -->
-
-
-
-
-
-				</div>
-			</div>
-
-
-			<!-- RIGHT SECTION -->
-			<div class="col-md-9 r-content">
-				<div class="flexslider">
-					<div class="slides">
-							<div class="profile" id="1">
-								<script>
-								        L.mapbox.accessToken = 'pk.eyJ1IjoibWlnaHR5cmV2ZW5nZSIsImEiOiJjaWZmbTR3M2Y4bHQ1cnhrbm90bTIyNnQ5In0.lgVsXJk791nxlNuhV96RKQ';
-								        var map = L.mapbox.map('1', 'mapbox.streets');
-                        var geocoder = L.mapbox.geocoder('mapbox.places');
-                       	var reminders = L.mapbox.featureLayer().addTo(map);
-								        var myLayer = L.mapbox.featureLayer().addTo(map);
-                        var userGeoJSON = {user:"demo",stat:true,loc:[0,0],distanceToAlert:0,start:"9:00am",end:"2:00pm",days:"Monday,Tuesday",rep:false};
-//alarmAddHelper()
-                        var toSendGeoJSON = {user:"demo",stat:true,loc:null,distanceToAlert:0,start:null,end:null,days:null,rep:false};
-                        target = toSendGeoJSON;
-
-								        if (!navigator.geolocation) {
-										    console.log('Geolocation is not available');
-										} else {
-										   	function geoloc(){
-										        /*e.preventDefault();
-										        e.stopPropagation();*/
-										        map.locate();
-										    };
-										    geoloc();
-										}
-										// Once we've got a position, zoom and center the map
-										// on it, and add a single marker.
-										
-										function userLocation(){ 
-											map.on('locationfound', function(e) {
-												console.log(e.latlng.lng + " " + e.latlng.lat);
-											    map.fitBounds(e.bounds);
-											
-											    layerGeoJSON = myLayer.setGeoJSON({
-											        type: 'Feature',
-											        geometry: {
-											            type: 'Point',
-											            coordinates: [e.latlng.lng, e.latlng.lat]
-											        },
-											        properties: {
-											            'title': 'Here I am!',
-											            'marker-color': '#ff8888',
-											            'marker-symbol': 'star'
-											        }
-											    });
-
-                          userGeoJSON.loc = layerGeoJSON._geojson.geometry.coordinates;
-											});
-										};
-										
-										// If the user chooses not to allow their location
-										// to be shared, display an error message.
-										map.on('locationerror', function() {
-										    console.log('Position could not be found');
-										});
-								</script>
-							</div>
-						<!-- SECTION -->
-					</div>
-				</div>
-
-				<!-- FOOTER -->
-				<footer>
-					<div class="row">
-						<div class="col-md-7">
-							<p>&copy; The JAYS Group</p>
-						</div>
-						<div class="col-md-5">
-							<ul class="social">
-								<li><a href="#"><i class="fa fa-facebook"></i></a></li>
-								<li><a href="#"><i class="fa fa-twitter"></i></a></li>
-								<li><a href="#"><i class="fa fa-dribbble"></i></a></li>
-								<li><a href="#"><i class="fa fa-pinterest"></i></a></li>
-							</ul>
-						</div>
-					</div>
-				</footer>
-			</div>
-		</div>
-	</div>
-</div>
-<script>
-
-
-function bindReminders(){
-$(".singleReminderTemplate").on("click", function(){
-	var abc = $(this).closest(".singleReminderTemplate").attr("id");
-	setTargetDistance(10,target);
-	return geocoder.query(abc,geomapCoords)
-});}
-
-</script>
-
-
-<!-- MAIN CONTENT -->
-
-<script type="text/javascript">
-	$("#messageButton").on("click", function(e) {
-	
-	  	e.preventDefault();
-	  var reminderTitle = $("#reminderTitle").val();
-	  var reminderLocation = $("#reminderLocation").val();
-	  var distance = $("#distance").val();
-	  txtOutput.value = reminderTitle + " is set at " + reminderLocation + " by " + distance + "km";
-	  	$("#singleReminder").clone().appendTo(".remindersList");
-	    $(".remindersList").find("#singleReminder").attr('id',reminderLocation);
-	    $("#"+reminderLocation).show();
-	    $("#"+reminderLocation+" #remindT").html(reminderTitle);
-		$("#"+reminderLocation+" #remindL").html(reminderLocation);
-		$("#"+reminderLocation+" #distanceD").html(distance);
-
-	     $('#reminderTitle').val( "" );
-   		 $('#reminderLocation').val( "" );
-    	 $('#distance').val( "" );
-    	 setTargetDistance(distance,target);
-    	 console.log(distance);
-		 console.log(reminderLocation);
-    	 bindReminders();
-	return geocoder.query(reminderLocation,geomapCoords)
-
- 	  
-});
-
-</script>
-
-
-
-
-
-<!-- JavaScript -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-<script src="scripts/bootstrap.js"></script>
-<script src="scripts/base.js"></script>
-
-
-
-<script>
-function render(layer,coords,targetJSON){
- 	targetLayer = layer.setGeoJSON({
-	        type: 'Feature',
-	        geometry: {
-		      type: 'Point',
-		      coordinates: [coords.lng, coords.lat]
-		    },
-		    properties: {
-		      'title': 'I want to be here!',
-		      'marker-color': '#8888aa',
-		      'marker-symbol': 'a'
-		    }
-	});
-  targetJSON.loc = targetLayer._geojson.geometry.coordinates;
-};
-
-function addMarker(){
-	var addressQuery = prompt("Where would you like to set a reminder?");
-  var targetDistance = prompt("How far away would you like to be notified?");
-  setTargetDistance(targetDistance,target);
-	return geocoder.query(addressQuery,geomapCoords)
-};
-
-function setTargetDistance(distance,targetJSON){
-  targetJSON.distanceToAlert = distance;
-}
-
-function geomapCoords(err, data) {
-    if (data.lbounds) {
-      map.fitBounds(data.lbounds);
-      render(reminders,data.lbounds.getCenter(),target);
-      return data.lbounds.getCenter();
-    } else if (data.latlng) {
-      map.fitBounds(data.lbounds);
-      render(reminders,data.latlng,target);
-      return data.latlng;
-    }
-}
-
-function distBetween(point1,point2){
-  console.log("here2");
-  return point1.distanceTo(point2);
-};
-
-function distFromUser(point){
-  console.log("here");
-  return distBetween(userGeoJSON.loc,point);
-}
-
-function checkToAlert(point){
-  var dist = distBetween(userGeoJSON.loc,point);
-  if(userGeoJSON.distanceToAlert<=dist){
-    alert();
-  }
-};
-
-function alert(){
-  window.alert("You are "+userGeoJSON.distanceToAlert.toFixed(0)+"m or less away from your destination.");
-};
-
-function test(){
-
-};
-
-function init(){
-  userLocation();
-  while(target.loc!=null){
-    setInterval(userLocation(),500);
-    setInterval(checkToAlert(target.loc),500);
-  };
-};
-
-init();
-
-</script>
-
-
+	<script src = "js/sound.js"> </script>
+	<script src = "js/cookieHandler.js"></script>
+	<script src = "js/windowSetter.js"></script>
+	<script src = "js/namespace.js"></script>
+	<!-- keep for last demo copy -->
+	<<script src = "js/main_copy.js"></script>
+		
 
 </body>
+
 </html>
