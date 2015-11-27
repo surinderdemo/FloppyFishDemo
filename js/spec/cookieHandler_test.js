@@ -15,7 +15,7 @@ describe("Cookie Handler Unit Tests", function() {
   it("Get Cookie that was previously set at 42", function() {
     var gC = getCookie("test");
     console.log(gC);
-    expect(gC).toBe(42);
+    expect(gC).toBe('42');
   });
 
   it("Check if cookies are not Null", function() {
