@@ -1,13 +1,24 @@
 describe("Main_Draw Unit Tests", function() {
 
 
-  it("and has a positive case", function() {
-  	play_sound(soundJump);
-  	console.log(thistime);
-    expect(thistime).not.toBeNull;
+  it("Create Rect Function and check if null", function() {
+
   });
 
-  it("and can have a negative case", function() {
-    expect(false).not.toBe(true);
+  it("Create Circle Function and check if null", function() {
+
   });
+
+  it("Create Image Function and check if null", function() {
+
+  });
+
+  it("Create Sprite Function and check if null", function() {
+
+  });
+
+  it("Create Text Function and check if null", function() {
+
+  });
+
 });

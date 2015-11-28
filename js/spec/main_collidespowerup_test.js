@@ -1,13 +1,16 @@
 describe("Main_CollidesPowerUp Unit Tests", function() {
 
 
-  it("and has a positive case", function() {
-  	play_sound(soundJump);
-  	console.log(thistime);
-    expect(thistime).not.toBeNull;
+  it("Check to see if collision with pipe, coin, or ground happened", function() {
+  	//	
   });
 
-  it("and can have a negative case", function() {
-    expect(false).not.toBe(true);
+  it("Check to see if distances match each other", function() {
+	//
   });
+
+  it("Check to see if collision is null", function() {
+	//
+  });
+  
 });

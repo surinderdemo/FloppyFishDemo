@@ -1,13 +1,17 @@
 describe("Main_Gameover Tests", function() {
 
 
-  it("and has a positive case", function() {
-  	play_sound(soundJump);
-  	console.log(thistime);
-    expect(thistime).not.toBeNull;
+  it("Check for medal object returned", function() {
+
+
   });
 
-  it("and can have a negative case", function() {
-    expect(false).not.toBe(true);
+  it("Get the x and y values for the input", function() {
+
   });
+
+  it("Check to see if cookie was stored", function() {
+
+  });
+
 });

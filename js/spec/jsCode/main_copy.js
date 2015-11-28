@@ -639,7 +639,6 @@ window.GameOver = function(){
 	this.getMedal = function()
 	{
 	   var score = Flappy_Fish.score.coins;
-	   console.log(score)
 	   	medal = "gold";
 	
 		return medal;

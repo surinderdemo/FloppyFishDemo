@@ -1,13 +1,15 @@
 describe("Main_Particle Unit Tests", function() {
 
 
-  it("and has a positive case", function() {
-  	play_sound(soundJump);
-  	console.log(thistime);
-    expect(thistime).not.toBeNull;
+  it("Confirm if particle will be moving left or right", function() {
+
   });
 
-  it("and can have a negative case", function() {
-    expect(false).not.toBe(true);
+  it("Check the current speed of a particle instance", function() {
+
+  });
+
+  it("Check for different types of particles", function()){
+  	
   });
 });

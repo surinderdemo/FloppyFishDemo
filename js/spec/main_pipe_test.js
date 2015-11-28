@@ -1,13 +1,11 @@
 describe("Main_Pipe Unit Tests", function() {
 
 
-  it("and has a positive case", function() {
-  	play_sound(soundJump);
-  	console.log(thistime);
-    expect(thistime).not.toBeNull;
+  it("Check for center of the pipe value", function() {
+  	
   });
 
-  it("and can have a negative case", function() {
-    expect(false).not.toBe(true);
+  it("Get the coin value for the pipe", function() {
+
   });
 });

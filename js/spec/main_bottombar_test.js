@@ -1,13 +1,11 @@
 describe("Main_BottomBar Unit Tests", function() {
 
 
-  it("and has a positive case", function() {
-  	play_sound(soundJump);
-  	console.log(thistime);
-    expect(thistime).not.toBeNull;
+  it("Check if background has been uploaded", function() {
+  	//
   });
 
-  it("and can have a negative case", function() {
-    expect(false).not.toBe(true);
+  it("Check coordinates to draw the background", function() {
+    //expect(false).not.toBe(true);
   });
 });

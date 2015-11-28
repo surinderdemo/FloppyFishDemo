@@ -13,6 +13,7 @@ describe("Cookie Handler Unit Tests", function() {
   it("Get Cookie that was previously set at 42", function() {
     var gC = getCookie("test");
     console.log(gC);
+    
     expect(gC).toEqual('42');
   });
 

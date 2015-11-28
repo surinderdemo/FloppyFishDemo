@@ -1,13 +1,11 @@
 describe("Main_Play Unit Tests", function() {
 
 
-  it("and has a positive case", function() {
-  	play_sound(soundJump);
-  	console.log(thistime);
-    expect(thistime).not.toBeNull;
+  it("Check if images have been initialized", function() {
+
   });
 
-  it("and can have a negative case", function() {
-    expect(false).not.toBe(true);
+  it("Check if entities array has been cycled through", function() {
+
   });
 });

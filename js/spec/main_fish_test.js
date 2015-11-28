@@ -1,13 +1,23 @@
 describe("Main_Fish Unit Test", function() {
 
 
-  it("and has a positive case", function() {
-  	play_sound(soundJump);
-  	console.log(thistime);
-    expect(thistime).not.toBeNull;
+  it("Check if image is loaded", function() {
+
   });
 
-  it("and can have a negative case", function() {
-    expect(false).not.toBe(true);
+  it("Check for Gravity instance", function() {
+
+  });
+
+  it("Check for velocity instance", function() {
+
+  });
+
+  it("Check if user has tapped", function() {
+
+  });
+
+  it("Confirm the jump with jump buffer", function() {
+
   });
 });
