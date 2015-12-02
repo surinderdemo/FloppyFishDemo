@@ -1,7 +1,11 @@
 
 Flappy_Fish.Draw = {
 
-
+	/** This function resets the canvas the game is rendered on
+	*/
+	clear: function () {
+		Flappy_Fish.ctx.clearRect(0, 0, Flappy_Fish.WIDTH, Flappy_Fish.HEIGHT);
+	},
 
 	/** This function draws a rectangle with starting coordinates, width and height, and colour
 	* {int} x - initial x coordinate
@@ -213,7 +217,7 @@ Flappy_Fish.Pipe = function (x, w) {
 
 /** This sets the playr character instance
 */
-Flappy_Fish.fish = function () {
+Flappy_Fish.Bird = function () {
 
 	this.img = new Image();
 	this.img.src = 'images/fish.png';
@@ -229,7 +233,7 @@ Flappy_Fish.fish = function () {
 	this.play = false;
 	this.jump = -4.6;
 	this.rotation = 0;
-	this.type = 'fish';
+	this.type = 'bird';
 	this.powerGravity = false;
 	this.powerTime = 0;
 	this.origGravity = this.gravity;
@@ -317,7 +321,7 @@ Flappy_Fish.PowerUp = function (x){
 	this.img = new Image();
 	this.img.src = 'images/medals/powerupGravity.png';
 	this.centerX = x;
-	this.centerY = Flappy_Fish.HEIGHT - 200; // close to the floor, dangerous to grab
+	this.centerY = Flappy_Fish.HEIGHT - 200; // close to the roof, dangerous to grab
 	this.width = 44;
 	this.height = 44;
 	this.h = this.height;
@@ -421,24 +425,24 @@ Flappy_Fish.Particle = function (x, y, r, col, type) {
  // checks if two entities are touching
 /** This function checks for entity collision
 */
-Flappy_Fish.Collides = function (fish, pipe) {
+Flappy_Fish.Collides = function (bird, pipe) {
 
 
-	if(fish.vy >=370){                
+	if(bird.vy >=370){                
 		 
 		 return true;
 	}
-	if (pipe.coin && fish.vx > pipe.centerX + pipe.w / 2 - 5) {
+	if (pipe.coin && bird.vx > pipe.centerX + pipe.w / 2 - 5) {
 		pipe.coin = false;
 		Flappy_Fish.score.coins += 1;
 		Flappy_Fish.digits = Flappy_Fish.score.coins.toString().split('');
 		play_sound(soundScore);
 	}
 
-	var bx1 = fish.vx - fish.width / 2;
-	var by1 = fish.vy - fish.height / 2;
-	var bx2 = fish.vx + fish.width / 2;
-	var by2 = fish.vy + fish.height / 2;
+	var bx1 = bird.vx - bird.width / 2;
+	var by1 = bird.vy - bird.height / 2;
+	var bx2 = bird.vx + bird.width / 2;
+	var by2 = bird.vy + bird.height / 2;
 
 	var upx1 = pipe.centerX;
 	var upy1 = 0;
@@ -464,14 +468,14 @@ Flappy_Fish.Collides = function (fish, pipe) {
 
 };
 
-Flappy_Fish.CollidesPowerUp = function (fish, powerup) {
+Flappy_Fish.CollidesPowerUp = function (bird, powerup) {
 	//window.alert(1);
 	//window.alert(powerup.centerX);
 	var collides = false;
-	var bx1 = fish.vx - fish.width / 2; // fish left side
-	var by1 = fish.vy - fish.height / 2; // fish bottom
-	var bx2 = fish.vx + fish.width / 2; // fish right side
-	var by2 = fish.vy + fish.height / 2; // fish top
+	var bx1 = bird.vx - bird.width / 2; // bird left side
+	var by1 = bird.vy - bird.height / 2; // bird bottom
+	var bx2 = bird.vx + bird.width / 2; // bird right side
+	var by2 = bird.vy + bird.height / 2; // bird top
 
 	var p1 = powerup.centerX + powerup.width/2; // right side
 	var p2 = powerup.centerY + powerup.height/2; // top
@@ -550,8 +554,8 @@ window.Play = function(){
 		Flappy_Fish.entities.push(new Flappy_Fish.Pipe(Flappy_Fish.WIDTH + Flappy_Fish.WIDTH / 2, 50));
 		Flappy_Fish.entities.push(new Flappy_Fish.Pipe(Flappy_Fish.WIDTH * 2, 50));
 		Flappy_Fish.entities.push(new Flappy_Fish.PowerUp(Flappy_Fish.WIDTH - Flappy_Fish.WIDTH/2));
-		Flappy_Fish.fish = new Flappy_Fish.fish();
-		Flappy_Fish.entities.push(Flappy_Fish.fish);
+		Flappy_Fish.bird = new Flappy_Fish.Bird();
+		Flappy_Fish.entities.push(Flappy_Fish.bird);
 		for(var n=0;n<10;n++){
 			var img = new Image();
 			img.src = "images/fonts/font_small_" + n +'.png';
@@ -588,7 +592,7 @@ window.Play = function(){
 			Flappy_Fish.entities[i].update();
 			try{
 			if (Flappy_Fish.entities[i].type == 'pipe') {
-				var hit = Flappy_Fish.Collides(Flappy_Fish.fish, Flappy_Fish.entities[i]);
+				var hit = Flappy_Fish.Collides(Flappy_Fish.bird, Flappy_Fish.entities[i]);
 				if (hit) {
 					play_sound(soundHit);
 					Flappy_Fish.changeState('GameOver');
@@ -596,13 +600,13 @@ window.Play = function(){
 				}
 			}
 			if (Flappy_Fish.entities[i].type === 'powerup'){
-				var powerup = Flappy_Fish.CollidesPowerUp(Flappy_Fish.fish, Flappy_Fish.entities[i]);
+				var powerup = Flappy_Fish.CollidesPowerUp(Flappy_Fish.bird, Flappy_Fish.entities[i]);
 				if (powerup){
 					//play_sound(soundHit);
 					Flappy_Fish.entities[i].Remove();
 					for (j = 0; j < Flappy_Fish.entities.length; j += 1){
-						if (Flappy_Fish.entities[j].type === 'fish'){
-							//window.alert('fish!');
+						if (Flappy_Fish.entities[j].type === 'bird'){
+							//window.alert('bird!');
 							Flappy_Fish.entities[j].powerMode();
 						}
 					}
@@ -696,7 +700,7 @@ window.GameOver = function(){
 			}
 			Flappy_Fish.Input.tapped = false;
 		}
-		Flappy_Fish.fish.update();
+		Flappy_Fish.bird.update();
 	}
 
 	this.render = function(){
