@@ -1,6 +1,4 @@
 
- // abstracts various canvas operations into
- // standalone functions
 Flappy_Fish.Draw = {
 
 	/** This function resets the canvas the game is rendered on
@@ -30,6 +28,7 @@ Flappy_Fish.Draw = {
 	circle: function (x, y, r, col) {
 		Flappy_Fish.ctx.fillStyle = col;
 		Flappy_Fish.ctx.beginPath();
+		// creates a full circle offset by 5 pixels from top left corner of instance
 		Flappy_Fish.ctx.arc(x + 5, y + 5, r, 0, Math.PI * 2, true);
 		Flappy_Fish.ctx.closePath();
 		Flappy_Fish.ctx.fill();
@@ -65,21 +64,6 @@ Flappy_Fish.Draw = {
 		Flappy_Fish.ctx.restore();
 	},
 	
-	/** This function draws a semi-circle
-	* param {int} x - intial x coordinate
-	* param {int} y - initial y coordinate
-	* param {int} r - radius of semi-circle
-	* param {int} col - colour of semi-circle
-	*/
-	semiCircle: function (x, y, r, col) {
-		Flappy_Fish.ctx.fillStyle = col;
-		Flappy_Fish.ctx.beginPath();
-		Flappy_Fish.ctx.arc(x, y, r, 0, Math.PI, false);
-		Flappy_Fish.ctx.closePath();
-		Flappy_Fish.ctx.fill();
-	},
-
-	
 	/** This function draws text to the screen
 	* param {string} string - text to be drawn
 	* param {int} x - intial x coordinate
@@ -97,6 +81,7 @@ Flappy_Fish.Draw = {
 
 Flappy_Fish.Input = {
 
+	// initialize instance variables
 	x: 0,
 	y: 0,
 	tapped: false,
@@ -154,10 +139,11 @@ Flappy_Fish.BottomBar = function (x, y, r) {
 	this.respawn = function () {
 		this.x = Flappy_Fish.WIDTH - 1;
 	}
+	this.Remove = function(){
+		// no remove for this function
+	}
 
 }
-
-
 
 /** This function sets a pipe instance
 */
@@ -166,6 +152,7 @@ Flappy_Fish.Pipe = function (x, w) {
 	this.centerX = x;
 	this.coin = true
 	this.w = w;
+	// height of bottom pipe
 	this.h = Flappy_Fish.HEIGHT - 150;
 	this.vx = -1;
 	this.type = 'pipe';
@@ -179,24 +166,37 @@ Flappy_Fish.Pipe = function (x, w) {
 		if (this.centerX == (0 - this.w)) {
 			this.respawn();
 		}
+
 	};
 
 	/** This function draws the pipee to the screen
 	*/
 	this.render = function () {
 
+		var colourBlack = '#000000';
+		var colourCyan = '#7bb5c1';
+		var colourDarkCyan = '#5f7c82';
+
 		if (this.coin) {
 			Flappy_Fish.Draw.circle(this.centerX + this.w / 2 - 5, this.centerY - 5, 5, "Gold")
 		}
-		Flappy_Fish.Draw.rect(this.centerX, 0, this.w, this.centerY - 50, '#8ED6FF');
-		Flappy_Fish.Draw.rect(this.centerX, this.centerY + 50, this.w, this.h - this.centerY, '#8ED6FF');
+		// black outline of top and bottom pipes, set to the size of the pipe object
+		Flappy_Fish.Draw.rect(this.centerX, 0, this.w, this.centerY - 60, colourBlack);
+		Flappy_Fish.Draw.rect(this.centerX, this.centerY + 50, this.w, this.h, colourBlack);
+		// base colour of top and bottom pipes, offset to create a border of 3 pixel width
+		Flappy_Fish.Draw.rect(this.centerX+3, 0, this.w - 6, this.centerY - 63, colourCyan);
+		Flappy_Fish.Draw.rect(this.centerX+3, this.centerY + 53, this.w-6, this.h, colourCyan);
+		// shade colour of top and bottom pipes, set partially create shadow effect
+		Flappy_Fish.Draw.rect(this.centerX+3, 0, this.w - 33, this.centerY - 63, colourDarkCyan);
+		Flappy_Fish.Draw.rect(this.centerX+3, this.centerY + 53, this.w-33, this.h, colourDarkCyan);
 	}
 
 	/** This function initializes the pipe instance
 	*/
 	this.respawn = function () {
+		// range only allows for desired pipe coordinates
 		this.centerY = this.randomIntFromInterval(70, 220);
-		this.centerX = 320 - this.w + 160;
+		this.centerX = Flappy_Fish.WIDTH - this.w + Flappy_Fish.WIDTH/2;
 		this.coin = true;
 	}
 
@@ -206,35 +206,58 @@ Flappy_Fish.Pipe = function (x, w) {
 		return Math.floor(Math.random() * (max - min + 1) + min);
 	}
 
-	this.centerY = this.randomIntFromInterval(70, 220);
+	// interval within game bounds
+	this.centerY = this.randomIntFromInterval(100, 190);
+
+	this.Remove = function(){
+		// no remove for this function
+		// keep for game functionality
+	}
 }
 
-/** This sets the playr character instance
+/** This sets the player character instance
 */
-Flappy_Fish.Bird = function () {
+Flappy_Fish.Fish = function () {
 
 	this.img = new Image();
 	this.img.src = 'images/fish.png';
+	// constant gravity
 	this.gravity = 0.25;
+	// fish hit box
 	this.width = 34;
 	this.height = 24;
+	// initial x and y values to draw sprite
 	this.ix = 0;
 	this.iy = 0;
-	this.fr = 0;
+	// initial frame of fish sprite
+	this.fishFrame = 0;
+	this.maxFishFrame = 5;
+	this.entireFishFrameHeight = this.height * 3;
+	// x and y velocities
 	this.vy = 180;
 	this.vx = 70;
 	this.velocity = 0;
 	this.play = false;
+	// fish jump gravity
 	this.jump = -4.6;
 	this.rotation = 0;
-	this.type = 'bird';
+	this.type = 'fish';
+	this.powerGravity = false;
+	this.powerTime = 0;
+	this.origGravity = this.gravity;
+	this.gravBuffer = 0.2;
+	this.origJump = this.jump;
+	this.jumpBuffer = -3;
+	// power up duration
+	this.powerDuration = 4000;
+	this.floor = 370;
 	
 	/** This function updates the player character instance
 	*/
 	this.update = function () {
-		if (this.fr++ > 5) {
-			this.fr = 0;
-			if (this.iy == this.height * 3) {
+		if (this.fishFrame++ > this.maxFishFrame) {
+			this.fishFrame = 0;
+			if (this.iy == this.entireFishFrameHeight) {
 				this.iy = 0
 			}
 			this.iy += this.height;
@@ -245,15 +268,35 @@ Flappy_Fish.Bird = function () {
 			if (this.vy <= 0) {
 				this.vy = 0;
 			}
-			if (this.vy >= 370) {
-				this.vy = 370;
+			if (this.vy >= this.floor) {
+				this.vy = this.floor;
 			}
+			//rotation is the smaller value between a fraction of the velocity multiplied by the maximum rotation and maximum rotation
 			this.rotation = Math.min((this.velocity / 10) * 90, 90);
 		}
 		if (Flappy_Fish.Input.tapped) {
 			this.play = true;
 			play_sound(soundJump);
 			this.velocity = this.jump;
+
+		}
+
+		if (this.powerGravity == true){
+			var d = new Date();
+			var t = d.getTime();
+			// window.alert(t);
+
+			if (t - this.powerDuration > powerTime){
+				this.powerGravity = false
+				if (this.gravity == this.origGravity - this.gravBuffer){
+					this.gravity = this.gravity + this.gravBuffer;
+				}
+				if (this.jump == this.origJump - this.jumpBuffer){
+					this.jump = this.jump + this.jumpBuffer;
+				}
+				
+			}
+			
 		}
 	};
 
@@ -263,44 +306,71 @@ Flappy_Fish.Bird = function () {
 
 		Flappy_Fish.Draw.Sprite(this.img, this.ix, this.iy, this.width, this.height, this.vx, this.vy, this.width, this.height, this.rotation);
 	}
+	this.Remove = function(){
+		// no remove for this function
+	}
+	this.powerMode = function(){
+		this.powerGravity = true;
+		if (this.gravity == this.origGravity){
+			
+			this.gravity = this.gravity - this.gravBuffer;
+			// window.alert(this.gravity);
+		}
+		if (this.jump == this.origJump){
+			
+			this.jump = this.jump - this.jumpBuffer;
+			// window.alert(this.gravity);
+		}
+		var date = new Date();
+		powerTime = date.getTime();
+
+	}
 
 }
+
 
 Flappy_Fish.PowerUp = function (x){
 
 	this.img = new Image();
-	this.img.src = 'images/medals/medal_gold.png';
+	this.img.src = 'images/medals/powerupGravity.png';
 	this.centerX = x;
-	this.centerY = 100;
-	this.width = 24;
-	this.height = 34;
+	// initial spawn point
+	this.centerY = Flappy_Fish.HEIGHT - 200;
+	// hit box size
+	this.width = 44;
+	this.height = 44;
 	this.h = this.height;
+	// decrements power up position with the changing
 	this.vx = -1;
 	this.type = 'powerup';
-	randBegin = 100;
-	randEnd = 200;
+
 
 
 	this.update = function (){
 		this.centerX += this.vx;
-		if (this.ix == (0 - this.width)) {
+		if (this.centerX == (0 - this.width)) {
 			this.respawn();
 		}
 	}
 
 	this.render = function (){
-		Flappy_Fish.Draw.Image(this.img, this.ix, this.iy);
+		Flappy_Fish.Draw.Image(this.img, this.centerX, this.centerY);
 	}
 
 	this.respawn = function () {
-		this.iy = this.randomIntFromInterval(randBegin, randEnd);
-		this.ix = 320 - this.w + 160;
+		this.centerY = this.randomIntFromInterval(0,Flappy_Fish.HEIGHT); // random on screen
+		this.centerX = Flappy_Fish.WIDTH;  // somewhere in front of you
 	}
 
 	/** Ths function returns a random integer
 	*/
 	this.randomIntFromInterval = function (min, max) {
 		return Math.floor(Math.random() * (max - min + 1) + min);
+	}
+
+	this.Remove = function(){
+		this.centerX = Flappy_Fish.WIDTH - this.width;
+		this.centerY = -this.height; // off screen
 	}
 
 
@@ -317,13 +387,10 @@ Flappy_Fish.Particle = function (x, y, r, col, type) {
 	this.type = type || 'circle';
 	this.name = 'particle';
 
-	// determines whether particle will
-	// travel to the right of left
-	// 50% chance of either happening
+	// determines whether particle will travel to the right of left 50% chance of either happening
 	this.dir = (Math.random() * 2 > 1) ? 1 : -1;
 
-	// random values so particles do no
-	// travel at the same speeds
+	// random values so particles do no travel at the same speeds
 	this.vx = ~~ (Math.random() * 4) * this.dir;
 	this.vy = ~~ (Math.random() * 7);
 
@@ -337,15 +404,11 @@ Flappy_Fish.Particle = function (x, y, r, col, type) {
 		this.x += this.vx;
 		this.y -= this.vy;
 
-		// increase velocity so particle
-		// accelerates oFlappy_Fish screen
+		// increase velocity so particle accelerates oFlappy_Fish screen
 		this.vx *= 0.99;
 		this.vy *= 0.99;
 
-		// adding this negative amount to the
-		// y velocity exerts an upward pull on
-		// the particle, as if drawn to the
-		// surface
+		// adding this negative amount to the y velocity exerts an upward pull on the particle, as if drawn to the surface
 		this.vy -= 0.35;
 
 		// oFlappy_Fishscreen
@@ -371,30 +434,36 @@ Flappy_Fish.Particle = function (x, y, r, col, type) {
  // checks if two entities are touching
 /** This function checks for entity collision
 */
-Flappy_Fish.Collides = function (bird, pipe) {
+Flappy_Fish.Collides = function (fish, pipe) {
 
-	if(bird.vy >=370){                
+	this.floor = 370;
+
+
+	if(fish.vy >=this.floor){                
 		 
 		 return true;
 	}
-	if (pipe.coin && bird.vx > pipe.centerX + pipe.w / 2 - 5) {
+	//checks if fish has passed the mid point of the pipe
+	if (pipe.coin && fish.vx > pipe.centerX + pipe.w / 2 - 5) {
 		pipe.coin = false;
 		Flappy_Fish.score.coins += 1;
 		Flappy_Fish.digits = Flappy_Fish.score.coins.toString().split('');
 		play_sound(soundScore);
 	}
 
-	var bx1 = bird.vx - bird.width / 2;
-	var by1 = bird.vy - bird.height / 2;
-	var bx2 = bird.vx + bird.width / 2;
-	var by2 = bird.vy + bird.height / 2;
+	//coordinates of passable space
+	var bx1 = fish.vx - fish.width / 2;
+	var by1 = fish.vy - fish.height / 2;
+	var bx2 = fish.vx + fish.width / 2;
+	var by2 = fish.vy + fish.height / 2;
 
+	//coordinates of upper pipe
 	var upx1 = pipe.centerX;
 	var upy1 = 0;
 	var upx2 = pipe.centerX + pipe.w;
-	var upy2 = pipe.centerY - 50;
+	var upy2 = pipe.centerY - 60;
 
-
+	//coordinates of lower pipe
 	var lpx1 = pipe.centerX;
 	var lpy1 = pipe.centerY + 50;
 	var lpx2 = upx2;
@@ -413,7 +482,38 @@ Flappy_Fish.Collides = function (bird, pipe) {
 
 };
 
+Flappy_Fish.CollidesPowerUp = function (fish, powerup) {
+	// window.alert(1);
+	// window.alert(powerup.centerX);
+	var collides = false;
+	var bx1 = fish.vx - fish.width / 2; // fish left side
+	var by1 = fish.vy - fish.height / 2; // fish bottom
+	var bx2 = fish.vx + fish.width / 2; // fish right side
+	var by2 = fish.vy + fish.height / 2; // fish top
 
+	var p1 = powerup.centerX + powerup.width/2; // right side
+	var p2 = powerup.centerY + powerup.height/2; // top
+	var p3 = powerup.centerY - powerup.height/2; // bottom
+	var p4 = powerup.centerX - powerup.width/2; // left side
+
+	if ( 
+		bx1 < p1 && bx1 > p4 // is the left corner inbetween the two corners of powerup
+		|| bx2 < p1 && bx2 > p4
+	) {	// window.alert('x');
+		if ( 
+		by1 < p2 && by1 > p3 
+		|| by2 < p2 && by2 > p3
+	) {
+		// window.alert('x');
+			play_sound(soundPowerup);
+			collides = true;
+			
+		}
+	}
+	
+	return collides;
+
+};
 
 /** This function sets title instance
 */
@@ -426,17 +526,12 @@ window.Splash = function(){
 	*/
 	this.init = function(){
 		play_sound(soundSwoosh);
+		Flappy_Fish.distance = 0;
+		Flappy_Fish.entities = [];
+		Flappy_Fish.score.taps = Flappy_Fish.score.coins = 0;
+		// Add entities
 		for (i = 0; i < 2; i += 1) {
 			Flappy_Fish.entities.push(new Flappy_Fish.BottomBar(Flappy_Fish.WIDTH * i, 0, Flappy_Fish.WIDTH));
-		Flappy_Fish.distance = 0;
-		//Flappy_Fish.bg_grad = "day";
-		//Flappy_Fish.entities = [];
-		Flappy_Fish.score.taps = Flappy_Fish.score.coins = 0;
-		//Add entities
-		//Flappy_Fish.entities.push(new Flappy_Fish.Cloud(30, ~~ (Math.random() * Flappy_Fish.HEIGHT / 2)));
-		//Flappy_Fish.entities.push(new Flappy_Fish.Cloud(130, ~~ (Math.random() * Flappy_Fish.HEIGHT / 2)));
-		//Flappy_Fish.entities.push(new Flappy_Fish.Cloud(230, ~~ (Math.random() * Flappy_Fish.HEIGHT / 2)));
-		
 		}
 	}
 	
@@ -455,6 +550,7 @@ window.Splash = function(){
 	/** This function draws the title to the screen
 	*/
 	this.render = function(){
+		//sets coordinates of the splash image
 		Flappy_Fish.Draw.Image(this.banner,66,100);
 	}
 
@@ -466,15 +562,16 @@ window.Play = function(){
 	
 	/** This function initializes several pipe objects and the player character
 	*/
-	this.init = function(){         
-		 
-		
+	this.init = function(){
+
+		//pushes initial entities to the array where they are instantiated
 		Flappy_Fish.entities.push(new Flappy_Fish.Pipe(Flappy_Fish.WIDTH, 50));
 		Flappy_Fish.entities.push(new Flappy_Fish.Pipe(Flappy_Fish.WIDTH + Flappy_Fish.WIDTH / 2, 50));
-		Flappy_Fish.entities.push(new Flappy_Fish.Pipe(Flappy_Fish.WIDTH *2, 50));
-		Flappy_Fish.entities.push(new Flappy_Fish.PowerUp(Flappy_Fish.WIDTH - 20));
-		Flappy_Fish.bird = new Flappy_Fish.Bird();
-		Flappy_Fish.entities.push(Flappy_Fish.bird);
+		Flappy_Fish.entities.push(new Flappy_Fish.Pipe(Flappy_Fish.WIDTH * 2, 50));
+		Flappy_Fish.entities.push(new Flappy_Fish.PowerUp(Flappy_Fish.WIDTH - Flappy_Fish.WIDTH/2));
+		Flappy_Fish.fish = new Flappy_Fish.Fish();
+		Flappy_Fish.entities.push(Flappy_Fish.fish);
+		//array of length 10
 		for(var n=0;n<10;n++){
 			var img = new Image();
 			img.src = "images/fonts/font_small_" + n +'.png';
@@ -486,23 +583,6 @@ window.Play = function(){
 	/** This function updates the all game entities and checks the input and game state
 	*/
 	this.update = function() { 
-		
-		Flappy_Fish.distance += 1;
-		var levelUp = ((Flappy_Fish.distance % 2048) === 0) ? true : false;
-		if (levelUp) {
-			var bg = "day";
-			var gradients = ["day", "dusk", "night", "dawn"];
-			for (var i = 0; i < gradients.length; i++) {
-				if (Flappy_Fish.bg_grad === gradients[i]) {
-					if (i == gradients.length - 1) {
-						bg = "day";
-					} else {
-						bg = gradients[i + 1];
-					}
-				}
-			}
-			Flappy_Fish.bg_grad = bg;
-		}
 
 
 		var checkCollision = false; // we only need to check for a collision
@@ -526,21 +606,33 @@ window.Play = function(){
 		// cycle through all entities and update as necessary
 		for (i = 0; i < Flappy_Fish.entities.length; i += 1) {
 			Flappy_Fish.entities[i].update();
-			if (Flappy_Fish.entities[i].type === 'pipe') {
-				var hit = Flappy_Fish.Collides(Flappy_Fish.bird, Flappy_Fish.entities[i]);
+			try{
+			if (Flappy_Fish.entities[i].type == 'pipe') {
+				var hit = Flappy_Fish.Collides(Flappy_Fish.fish, Flappy_Fish.entities[i]);
 				if (hit) {
 					play_sound(soundHit);
 					Flappy_Fish.changeState('GameOver');
 					 break;
 				}
 			}
-			if (Flappy_Fish.entities[i].type == 'powerup'){
-				var powerup = Flappy_Fish.Collides(Flappy_Fish.bird, Flappy_Fish.entities[i]);
+			if (Flappy_Fish.entities[i].type === 'powerup'){
+				var powerup = Flappy_Fish.CollidesPowerUp(Flappy_Fish.fish, Flappy_Fish.entities[i]);
 				if (powerup){
-					play_sound(soundHit);
+					// play_sound(soundHit);
+					Flappy_Fish.entities[i].Remove();
+					for (j = 0; j < Flappy_Fish.entities.length; j += 1){
+						if (Flappy_Fish.entities[j].type === 'fish'){
+							// window.alert('fish!');
+							Flappy_Fish.entities[j].powerMode();
+						}
+					}
 				}
-			}
 
+				
+			}
+			}catch(err){
+				// do nothing
+			}
 		}
 
 	}
@@ -548,7 +640,7 @@ window.Play = function(){
 	/** This function draws the score to the screen
 	*/
 	this.render = function() { 
-		//score             
+		// score printed to the center of the screen
 		var X = (Flappy_Fish.WIDTH/2-(Flappy_Fish.digits.length*14)/2);               
 		for(var i = 0; i < Flappy_Fish.digits.length; i++)
 		{
@@ -568,14 +660,7 @@ window.GameOver = function(){
 	{
 	   var score = Flappy_Fish.score.coins;
 	   console.log(score)
-	   if(score <= 10)
-		  medal = "bronze";
-	   if(score >= 20)
-		  medal = "silver";
-	   if(score >= 30)
-		  medal = "gold";
-	   if(score >= 40)
-		  medal = "platinum";
+	   	medal = "gold";
 	
 		return medal;
 	}
@@ -584,18 +669,19 @@ window.GameOver = function(){
 	*/
 	this.getHighScore = function(){
 		var savedscore = getCookie("highscore");
+		var expiryDate = 999;
 		if(savedscore != ""){
 			var hs = parseInt(savedscore) || 0;
 			if(hs < Flappy_Fish.score.coins)
 			{
 			 hs = Flappy_Fish.score.coins
-			 setCookie("highscore", hs, 999);
+			 setCookie("highscore", hs, expiryDate);
 			}
 			return hs;
 		  }
 		  else
 		  {                  
-			setCookie("highscore", Flappy_Fish.score.coins, 999);
+			setCookie("highscore", Flappy_Fish.score.coins, expiryDate);
 			return  Flappy_Fish.score.coins;
 		  }
 	}
@@ -609,11 +695,9 @@ window.GameOver = function(){
 			play_sound(soundDie);
 			that.banner = new Image();
 			that.banner.src = "images/scoreboard.png";
-			that.bg = new Image();
-			that.bg.src = "images/bg.png";
 			var m = that.getMedal();
 			that.medal =  new Image();
-			that.medal.src = 'images/medals/medal_' + m +'.png';
+			that.medal.src = 'images/medals/medal_gold.png';
 			that.replay = new Image();
 			that.replay.src = "images/replay.png";
 			that.highscore = that.getHighScore() ;
@@ -627,17 +711,22 @@ window.GameOver = function(){
 		if (Flappy_Fish.Input.tapped) {
 			var x = Flappy_Fish.Input.x;
 			var y = Flappy_Fish.Input.y;
-			
-			 if((x >= 102.5 && x <= 102.5+115) && (y >= 260 && y <= 260+70)){       
+			var xLeftBound = 102.5;
+			var xRightBound = 102.5+115;
+			var yUpperBound = 260;
+			var yLowerBound = 260+70;
+
+			 if((x >= xLeftBound && x <= xRightBound) && (y >= yUpperBound && y <= yLowerBound)){       
 				Flappy_Fish.changeState('Splash');
 			}
 			Flappy_Fish.Input.tapped = false;
 		}
-		Flappy_Fish.bird.update();
+		Flappy_Fish.fish.update();
 	}
 
 	this.render = function(){
 		if(this.banner){
+			// draws the game over screen with appropriate styling, i.e. numbers
 			Flappy_Fish.Draw.Image(this.banner,42,70);
 			Flappy_Fish.Draw.Image(this.medal,75,183);
 			Flappy_Fish.Draw.Image(this.replay,102.5,260);
@@ -650,4 +739,3 @@ window.GameOver = function(){
 
 window.addEventListener('load', Flappy_Fish.init, false);
 window.addEventListener('resize', Flappy_Fish.resize, false);
-
